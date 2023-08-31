@@ -20,6 +20,9 @@ const svgSprite = require('gulp-svg-sprite');
 const svgmin = require('gulp-svgmin');
 const cheerio = require('gulp-cheerio');
 const replace = require('gulp-replace');
+const fonter = require('gulp-fonter');
+const ttfToWoff2 = require('gulp-ttf2woff2');
+const zip = require('gulp-zip');
 
 const srcFolder = `./src`;
 const buildFolder = `./app`;
@@ -29,20 +32,23 @@ const path = {
     html: `${srcFolder}/*.html`,
     styles: `${srcFolder}/scss/*.scss`,
     scripts: `${srcFolder}/js/*.js`,
+    assets: `${srcFolder}/assets/**/*`,
     images: `${srcFolder}/img/**/*`,
-    sprites: `${srcFolder}/sprites/**/*.svg`
+    sprites: `${srcFolder}/sprites/**/*.svg`,
   },
   build: {
     html: `${buildFolder}/`,
     styles: `${buildFolder}/css/`,
     scripts: `${buildFolder}/js/`,
-    images: `${buildFolder}/img/`
+    assets: `${buildFolder}/assets/`,
+    images: `${buildFolder}/img/`,
   },
   watch: {
     html: `${srcFolder}/**/*.html`,
     styles: `${srcFolder}/scss/**/*.scss`,
     scripts: `${srcFolder}/js/**/*.js`,
-    images: `${srcFolder}/img/**/*`
+    assets: `${srcFolder}/assets/**/*`,
+    images: `${srcFolder}/img/**/*`,
   },
 }
 
@@ -172,6 +178,45 @@ function svgSprites() {
     .pipe(dest(`./src/img/icons/`));
 }
 
+function otf2ttf() {
+  return src(`${srcFolder}/fonts/**/*.otf`)
+    .pipe(plumber(plumberNotify('Font Converter')))
+    .pipe(fonter({
+      formats: ['ttf']
+    }))
+    .pipe(dest(`${srcFolder}/fonts/`))
+}
+
+function ttf2woff2() {
+  return src(`${srcFolder}/fonts/**/*.ttf`)
+  .pipe(plumber(plumberNotify('Font Converter')))
+  .pipe(ttfToWoff2())
+  .pipe(dest(`${srcFolder}/fonts/`))
+}
+
+function fontsClean() {
+  return del(`${srcFolder}/fonts/**/*.{ttf,otf}`)
+}
+
+function fontsCopy() {
+  return src(`${srcFolder}/fonts/**/*.woff2`)
+    .pipe(changed(`${buildFolder}/fonts/**/*`))
+    .pipe(dest(`${buildFolder}/fonts/`))
+    .pipe(gulpIf(!isBuild, browserSync.stream()))
+}
+
+function assetsCopy() {
+  return src(path.src.assets)
+    .pipe(changed(path.build.assets))
+    .pipe(dest(path.build.assets))
+    .pipe(gulpIf(!isBuild, browserSync.stream()))
+}
+
+function archivateApp() {
+  return src(`${buildFolder}/**/*`)
+    .pipe(zip('app.zip'))
+    .pipe(dest('./'))
+}
 
 let isBuild = false;
 
@@ -181,6 +226,8 @@ function changeMode(done) {
 }
 
 
-exports.dev = series(clean, html, styles, scripts, images, watching);
-exports.build = series(changeMode, clean, html, styles, scripts, images);
+exports.dev = series(clean, html, styles, scripts, images, fontsCopy, assetsCopy, watching);
+exports.build = series(changeMode, clean, html, styles, scripts, fontsCopy, images, assetsCopy);
 exports.sprite = series(svgSprites);
+exports.fonts = series(otf2ttf, ttf2woff2, fontsClean);
+exports.archivate = series(archivateApp);
