@@ -16,6 +16,10 @@ const webpack = require('webpack-stream');
 const babel = require('gulp-babel');
 const imagemin = require('gulp-imagemin');
 const webp = require('gulp-webp');
+const svgSprite = require('gulp-svg-sprite');
+const svgmin = require('gulp-svgmin');
+const cheerio = require('gulp-cheerio');
+const replace = require('gulp-replace');
 
 const srcFolder = `./src`;
 const buildFolder = `./app`;
@@ -26,6 +30,7 @@ const path = {
     styles: `${srcFolder}/scss/*.scss`,
     scripts: `${srcFolder}/js/*.js`,
     images: `${srcFolder}/img/**/*`,
+    sprites: `${srcFolder}/sprites/**/*.svg`
   },
   build: {
     html: `${buildFolder}/`,
@@ -135,6 +140,38 @@ function images() {
     .pipe(gulpIf(!isBuild, browserSync.stream()))
 }
 
+function svgSprites() {
+  return src(path.src.sprites)
+    .pipe(
+      svgmin({
+        js2svg: {
+          pretty: true,
+        },
+      })
+    )
+    .pipe(
+      cheerio({
+        run: function ($) {
+          $('[fill]').removeAttr('fill');
+          $('[stroke]').removeAttr('stroke');
+          $('[style]').removeAttr('style');
+        },
+        parserOptions: {
+          xmlMode: true
+        },
+      })
+    )
+    .pipe(replace('&gt;', '>'))
+    .pipe(svgSprite({
+      mode: {
+        stack: {
+          sprite: "../icons.svg"
+        }
+      },
+    }))
+    .pipe(dest(`./src/img/icons/`));
+}
+
 
 let isBuild = false;
 
@@ -146,3 +183,4 @@ function changeMode(done) {
 
 exports.dev = series(clean, html, styles, scripts, images, watching);
 exports.build = series(changeMode, clean, html, styles, scripts, images);
+exports.sprite = series(svgSprites);
