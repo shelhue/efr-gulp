@@ -1,9 +1,5 @@
 @import "vars";
-
-.test {
-  display: flex;
-  align-content: start;
-  align-items: center;
-  justify-content: space-between;
-  margin: 0;
-}
+@import "mixins";
+@import "fonts";
+@import "base";
+@import "components";
