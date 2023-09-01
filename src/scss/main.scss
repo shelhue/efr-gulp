@@ -1,9 +1,9 @@
-@import 'vars';
+@import "vars";
 
 .test {
   display: flex;
+  align-content: start;
   align-items: center;
   justify-content: space-between;
-  align-content: start;
   margin: 0;
 }

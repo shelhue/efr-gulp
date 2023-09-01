@@ -7,6 +7,7 @@ const gulpIf = require('gulp-if');
 const changed = require('gulp-changed');
 const del = require('del');
 const fileInclude = require('gulp-file-include');
+const htmlmin = require('gulp-htmlmin');
 const sass = require('gulp-sass')(require('sass'));
 const autoprefixer = require('gulp-autoprefixer');
 const groupMedia = require('gulp-group-css-media-queries');
@@ -85,6 +86,7 @@ function html()  {
     .pipe(gulpIf(!isBuild, changed(path.build.html, { hasChanged: changed.compareContents })))
     .pipe(plumber(plumberNotify("HTML")))
     .pipe(fileInclude())
+    .pipe(gulpIf(isBuild, htmlmin({ collapseWhitespace: true })))
     .pipe(dest(path.build.html))
     .pipe(gulpIf(!isBuild, browserSync.stream()))
 }
@@ -230,4 +232,4 @@ exports.dev = series(clean, html, styles, scripts, images, fontsCopy, assetsCopy
 exports.build = series(changeMode, clean, html, styles, scripts, fontsCopy, images, assetsCopy);
 exports.sprite = series(svgSprites);
 exports.fonts = series(otf2ttf, ttf2woff2, fontsClean);
-exports.archivate = series(archivateApp);
+exports.tozip = series(archivateApp);

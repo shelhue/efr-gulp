@@ -27,6 +27,7 @@
     "gulp-file-include": "^2.3.0",
     "gulp-fonter": "^0.3.0",
     "gulp-group-css-media-queries": "^1.2.2",
+    "gulp-htmlmin": "^5.0.1",
     "gulp-if": "^3.0.0",
     "gulp-imagemin": "^7.1.0",
     "gulp-notify": "^4.0.0",
@@ -41,6 +42,9 @@
     "gulp-zip": "^5.1.0",
     "sass": "^1.66.1",
     "style-loader": "^3.3.3",
+    "stylelint": "^15.10.3",
+    "stylelint-config-standard-scss": "^10.0.0",
+    "stylelint-order": "^6.0.3",
     "webpack-stream": "^7.0.0"
   },
   "babel": {
