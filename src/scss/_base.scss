@@ -32,8 +32,8 @@ a {
   color: inherit;
 }
 
-div[class$='__container'] {
+.container {
   margin: 0 auto;
-  max-width: 1170px;
   padding: 0 15px;
+  max-width: 1170px;
 }
